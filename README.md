@@ -34,13 +34,13 @@ cd cs186
 
 Clone the HW2 repo:
 ```
-git clone https://github.com/berkeley-cs186/Fa18HW2.git
+git clone https://github.com/berkeley-cs186/Sp19HW2.git
 ```
 If you get an error like: `Could not resolve host: github.com`, try restarting your docker machine (run `docker-machine restart` after exiting the docker container), and if that doesn't work restart your entire computer.
 
 cd into the folder you just created:
 ```
-cd Fa18HW2
+cd Sp19HW2
 ```
 
 To test everything downloaded correctly run:
