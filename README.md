@@ -237,7 +237,9 @@ methods. Also, you may only modify code in the `index` directory.
 
 
 ## Step 4: Submitting the Assignment
-Please find the submission instructions on Piazza.
+To submit, make sure your are in your Sp19HW2 folder. Then run:
+```python3 turn_in.py --student-id <your_studentid_here> --assignment hw2```
+but replace `your_studentid_here>` with your actual student ID (not your edx username!). This will generate a zip file called `hw2.zip` which you should upload to edx.
 
 ## Testing
 All of our public tests for this project are in the `edu.berkeley.cs186.database.index` package in the `src/test/java` folder. These are the tests that `maven clean test` runs. 60% of your grade will be made up of these public tests and 40% will be made up of hidden tests on our autograder.
