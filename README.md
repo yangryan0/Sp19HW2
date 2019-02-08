@@ -23,10 +23,6 @@ The only thing that should happen is the terminal should print cs186hw2. After r
 ```
 docker exec -it cs186hw2 bash
 ```
-
-After completing these steps, your terminal should look something like this:
-![Commands](hw2-dockerstart.PNG)
-
 While inside your container, navigate to the shared directory you created in the hw1 setup:
 ```
 cd cs186
@@ -53,9 +49,9 @@ To test your project implementation, run:
 mvn clean test -D HW=2
 ```
 
-If you haven't implemented anything, about 20 tests should fail and the bottom of your output should look something like this:
+If you haven't implemented anything, about 18 tests should fail and the bottom of your output should look something like this:
 
-![Expected Output](hw2-testoutput.png)
+![Commands](hw2-dockerstart.PNG)
 If a few additional tests fail try running the command again. If the problem persists then make a post on piazza.
 
 Before submitting your assignment you must run `mvn clean test` and ensure it works in the docker container. We will not accept "the test ran in my IDE" as an excuse. You should be running the maven tests periodically as you work through the project.
