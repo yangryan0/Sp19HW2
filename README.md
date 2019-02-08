@@ -238,7 +238,9 @@ methods. Also, you may only modify code in the `index` directory.
 
 ## Step 4: Submitting the Assignment
 To submit, make sure your are in your Sp19HW2 folder. Then run:
-```python3 turn_in.py --student-id <your_studentid_here> --assignment hw2```
+```
+python3 turn_in.py --student-id <your_studentid_here> --assignment hw2
+```
 but replace `your_studentid_here>` with your actual student ID (not your edx username!). This will generate a zip file called `hw2.zip` which you should upload to edx.
 
 ## Testing
