@@ -49,7 +49,7 @@ To test your project implementation, run:
 mvn clean test -D HW=2
 ```
 
-If you haven't implemented anything, about 18 tests should fail and the bottom of your output should look something like this:
+If you haven't implemented anything, about 18 tests should error and the bottom of your output should look something like this:
 
 ![Commands](hw2-dockerstart.PNG)
 
