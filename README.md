@@ -141,7 +141,7 @@ System.out.println(pageNum); // 0. Page numbers are assigned 0, 1, 2, ...
 
 // Write data into the page. All data written to the page is persisted in the
 // file automatically.
-ByteBuffer buf = page.getByteBuffer();
+Buffer buf = page.getBuffer(transaction);
 buf.putInt(42);
 buf.putInt(9001);
 ```
@@ -159,7 +159,7 @@ PageAllocator allocator = new PageAllocator("foo.data", wipe);
 Page page = allocator.fetchPage(0);
 
 // Read the data we previously wrote.
-ByteBuffer buf = page.getByteBuffer();
+Buffer buf = page.getBuffer();
 int x = buf.getInt(); // 42
 int y = buf.getInt(); // 9001
 ```
