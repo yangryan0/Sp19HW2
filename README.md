@@ -159,7 +159,7 @@ PageAllocator allocator = new PageAllocator("foo.data", wipe);
 Page page = allocator.fetchPage(0);
 
 // Read the data we previously wrote.
-Buffer buf = page.getBuffer();
+Buffer buf = page.getBuffer(transaction);
 int x = buf.getInt(); // 42
 int y = buf.getInt(); // 9001
 ```
