@@ -68,21 +68,31 @@ class InnerNode extends BPlusNode {
     // See BPlusNode.get.
     @Override
     public LeafNode get(BaseTransaction transaction, DataBox key) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        int i = 0;
+        while (i < keys.size() && key.compareTo(keys.get(i)) > 0) {
+            i++;
+        }
+        return (LeafNode) getChild(transaction, i);
     }
 
     // See BPlusNode.getLeftmostLeaf.
     @Override
     public LeafNode getLeftmostLeaf(BaseTransaction transaction) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        return (LeafNode) getChild(transaction, 0);
     }
 
     // See BPlusNode.put.
     @Override
-    public Optional<Pair<DataBox, Integer>> put(BaseTransaction transaction, DataBox key, RecordId rid)
-    throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+    public Optional<Pair<DataBox, Integer>> put(BaseTransaction transaction, DataBox key, RecordId rid) {
+        if (keys.size() == 2d) {
+
+        } else {
+            keys.add(key);
+            children.add(rid.getPageNum());
+            return Optional.empty();
+        }
     }
+
 
     // See BPlusNode.bulkLoad.
     @Override

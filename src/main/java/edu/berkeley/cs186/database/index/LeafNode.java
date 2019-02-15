@@ -341,7 +341,20 @@ class LeafNode extends BPlusNode {
      */
     public static LeafNode fromBytes(BaseTransaction transaction, BPlusTreeMetadata metadata,
                                      int pageNum) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        Page page = metadata.getAllocator().fetchPage(transaction, pageNum);
+        Buffer buf = page.getBuffer(transaction);
+
+        assert (buf.get() == (byte) 1);
+
+        List<DataBox> keys = new ArrayList<>();
+        List<RecordId> rids = new ArrayList<>();
+        int rightid = buf.getInt();
+        int n = buf.getInt();
+        for (int i = 0; i < n; i++) {
+            keys.add(DataBox.fromBytes(buf, metadata.getKeySchema()));
+            rids.add(RecordId.fromBytes(buf));
+        }
+        return new LeafNode(metadata, pageNum, keys, rids, Optional.ofNullable(rightid), transaction);
     }
 
     // Builtins //////////////////////////////////////////////////////////////////
