@@ -168,7 +168,16 @@ public class BPlusTree implements Closeable {
      */
     public Optional<RecordId> get(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        LeafNode l = root.get(transaction, key);
+        int i = 0;
+        while (i < l.getKeys().size() && key.compareTo(l.getKeys().get(i)) != 0) {
+            i++;
+        }
+        if (i == l.getKeys().size()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(l.getRids().get(i));
+        }
     }
 
     /**
@@ -217,7 +226,13 @@ public class BPlusTree implements Closeable {
      */
     public Iterator<RecordId> scanAll(BaseTransaction transaction) {
         // TODO(hw2): Return a BPlusTreeIterator.
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        LeafNode l = root.getLeftmostLeaf(transaction);
+        List<RecordId> rids = new ArrayList<>(l.getRids());
+        while (l.getRightSibling(transaction).isPresent()) {
+            l = l.getRightSibling(transaction).get();
+            rids.addAll(l.getRids());
+        }
+        return new BPlusTreeIterator(rids);
     }
 
     /**
@@ -247,7 +262,17 @@ public class BPlusTree implements Closeable {
     public Iterator<RecordId> scanGreaterEqual(BaseTransaction transaction, DataBox key) {
         typecheck(key);
         // TODO(hw2): Return a BPlusTreeIterator.
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        LeafNode l = root.get(transaction, key);
+        int i = 0;
+        while (i < l.getKeys().size() && key.compareTo(l.getKeys().get(i)) >= 0) {
+            i++;
+        }
+        List<RecordId> result = new ArrayList<>(l.getRids().subList(i - 1, l.getRids().size()));
+        while (l.getRightSibling(transaction).isPresent()) {
+            l = l.getRightSibling(transaction).get();
+            result.addAll(l.getRids());
+        }
+        return new BPlusTreeIterator(result);
     }
 
     /**
@@ -262,7 +287,17 @@ public class BPlusTree implements Closeable {
      */
     public void put(BaseTransaction transaction, DataBox key, RecordId rid) throws BPlusTreeException {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        Optional<Pair<DataBox, Integer>> split = root.put(transaction, key, rid);
+        if (!split.isPresent()) {
+            return;
+        }
+        List<DataBox> keys = new ArrayList<>();
+        List<Integer> children = new ArrayList<>();
+        keys.add(split.get().getFirst());
+        children.add(root.getPage().getPageNum());
+        children.add(split.get().getSecond());
+        root = new InnerNode(metadata, keys, children, transaction);
+        writeHeader(transaction, headerPage);
     }
 
     /**
@@ -282,7 +317,23 @@ public class BPlusTree implements Closeable {
      */
     public void bulkLoad(BaseTransaction transaction, Iterator<Pair<DataBox, RecordId>> data,
                          float fillFactor) throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        while (data.hasNext()) {
+            System.out.println(root);
+            System.out.println(toSexp(transaction));
+            Pair<DataBox, RecordId> a = data.next();
+            ArrayList<Pair<DataBox, RecordId>> input = new ArrayList<>();
+            input.add(a);
+            Optional<Pair<DataBox, Integer>> split = root.bulkLoad(transaction, input.iterator(), fillFactor);
+            if (split.isPresent()) {
+                List<DataBox> keys = new ArrayList<>();
+                List<Integer> children = new ArrayList<>();
+                keys.add(split.get().getFirst());
+                children.add(root.getPage().getPageNum());
+                children.add(split.get().getSecond());
+                root = new InnerNode(metadata, keys, children, transaction);
+                writeHeader(transaction, headerPage);
+            }
+        }
     }
 
     /**
@@ -299,7 +350,7 @@ public class BPlusTree implements Closeable {
      */
     public void remove(BaseTransaction transaction, DataBox key) {
         typecheck(key);
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        root.remove(transaction, key);
     }
 
     // Helpers /////////////////////////////////////////////////////////////////
@@ -396,15 +447,26 @@ public class BPlusTree implements Closeable {
     // Iterator ////////////////////////////////////////////////////////////////
     private class BPlusTreeIterator implements Iterator<RecordId> {
         // TODO(hw2): Add whatever fields and constructors you want here.
+        private List<RecordId> input;
+        private int i;
+        public BPlusTreeIterator(List<RecordId> input) {
+            this.input = input;
+            this.i = 0;
+        }
 
         @Override
         public boolean hasNext() {
-            throw new UnsupportedOperationException("TODO(hw2): implement");
+            return (i < input.size());
         }
 
         @Override
         public RecordId next() {
-            throw new UnsupportedOperationException("TODO(hw2): implement");
+            if (i >= input.size()) {
+                throw new NoSuchElementException();
+            }
+            RecordId output = this.input.get(this.i);
+            this.i = this.i + 1;
+            return output;
         }
     }
 }

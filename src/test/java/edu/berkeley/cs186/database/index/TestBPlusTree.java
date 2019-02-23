@@ -3,6 +3,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -80,6 +81,9 @@ public class TestBPlusTree {
         String leaf2 = "((7 (7 7)) (8 (8 8)) (9 (9 9)))";
         String leaf3 = "((10 (10 10)) (11 (11 11)))";
         String sexp = String.format("(%s 4 %s 7 %s 10 %s)", leaf0, leaf1, leaf2, leaf3);
+        PrintWriter a = new PrintWriter("tree.dot");
+        a.print(tree.toDot(null));
+        a.close();
         assertEquals(sexp, tree.toSexp(null));
     }
 
@@ -368,7 +372,6 @@ public class TestBPlusTree {
                 for (int i = 0; i < keys.size(); ++i) {
                     assertEquals(Optional.of(rids.get(i)), tree.get(null, keys.get(i)));
                 }
-
                 // Test scanAll.
                 assertEquals(sortedRids, iteratorToList(tree.scanAll(null)));
 

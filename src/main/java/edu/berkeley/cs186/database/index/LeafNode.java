@@ -130,35 +130,98 @@ class LeafNode extends BPlusNode {
     // See BPlusNode.get.
     @Override
     public LeafNode get(BaseTransaction transaction, DataBox key) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        return this;
     }
 
     // See BPlusNode.getLeftmostLeaf.
     @Override
     public LeafNode getLeftmostLeaf(BaseTransaction transaction) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        return this;
     }
 
     // See BPlusNode.put.
     @Override
-    public Optional<Pair<DataBox, Integer>> put(BaseTransaction transaction, DataBox key, RecordId rid)
-    throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+    public Optional<Pair<DataBox, Integer>> put(BaseTransaction transaction, DataBox key, RecordId rid) throws BPlusTreeException{
+        if (keys.contains(key)) {
+            throw new BPlusTreeException();
+        }
+        if (keys.size() == 2 * metadata.getOrder()) {
+            List<DataBox> key_copy = new ArrayList<>(keys);
+            List<RecordId> id_copy = new ArrayList<>(rids);
+            int i = 0;
+            while (i < key_copy.size() && key.compareTo(key_copy.get(i)) >= 0) {
+                i++;
+            }
+            key_copy.add(i, key);
+            id_copy.add(i, rid);
+            keys = key_copy.subList(0, metadata.getOrder());
+            rids = id_copy.subList(0, metadata.getOrder());
+            LeafNode new_node = new LeafNode(metadata, key_copy.subList(metadata.getOrder(), key_copy.size()),
+                    id_copy.subList(metadata.getOrder(), id_copy.size()), rightSibling, transaction);
+            rightSibling = Optional.of(new_node.getPage().getPageNum());
+            sync(transaction);
+            return Optional.of(new Pair<>(key_copy.get(metadata.getOrder()), new_node.getPage().getPageNum()));
+        } else {
+            int i = 0;
+            while (i < keys.size() && key.compareTo(keys.get(i)) >= 0) {
+                i++;
+            }
+            keys.add(i, key);
+            rids.add(i, rid);
+            sync(transaction);
+            return Optional.empty();
+        }
     }
 
     // See BPlusNode.bulkLoad.
     @Override
     public Optional<Pair<DataBox, Integer>> bulkLoad(BaseTransaction transaction,
             Iterator<Pair<DataBox, RecordId>> data,
-            float fillFactor)
-    throws BPlusTreeException {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+            float fillFactor) {
+        while (data.hasNext()) {
+            Pair<DataBox, RecordId> r = data.next();
+            DataBox key = r.getFirst();
+            RecordId rid = r.getSecond();
+            if (((float)(keys.size() + 1) / (float)(2 * metadata.getOrder())) > fillFactor) {
+                List<DataBox> key_copy = new ArrayList<>(keys);
+                List<RecordId> id_copy = new ArrayList<>(rids);
+                int i = 0;
+                while (i < key_copy.size() && key.compareTo(key_copy.get(i)) >= 0) {
+                    i++;
+                }
+                key_copy.add(i, key);
+                id_copy.add(i, rid);
+                keys = key_copy.subList(0, key_copy.size() - 1);
+                rids = id_copy.subList(0, key_copy.size() - 1);
+                LeafNode new_node = new LeafNode(metadata, key_copy.subList(key_copy.size() - 1, key_copy.size()),
+                        id_copy.subList(id_copy.size() - 1, id_copy.size()), rightSibling, transaction);
+                rightSibling = Optional.of(new_node.getPage().getPageNum());
+                sync(transaction);
+                return Optional.of(new Pair<>(key_copy.get(key_copy.size() - 1), new_node.getPage().getPageNum()));
+            } else {
+                int i = 0;
+                while (i < keys.size() && key.compareTo(keys.get(i)) >= 0) {
+                    i++;
+                }
+                keys.add(i, key);
+                rids.add(i, rid);
+                sync(transaction);
+            }
+        }
+
+        return Optional.empty();
     }
 
     // See BPlusNode.remove.
     @Override
     public void remove(BaseTransaction transaction, DataBox key) {
-        throw new UnsupportedOperationException("TODO(hw2): implement");
+        int index = keys.indexOf(key);
+        if (index < 0) {
+            return;
+        }
+        keys.remove(index);
+        rids.remove(index);
+        sync(transaction);
     }
 
     // Iterators /////////////////////////////////////////////////////////////////
@@ -194,12 +257,11 @@ class LeafNode extends BPlusNode {
 
     /** Returns the right sibling of this leaf, if it has one. */
     public Optional<LeafNode> getRightSibling(BaseTransaction transaction) {
-        if (!rightSibling.isPresent()) {
+        if (!rightSibling.isPresent() || rightSibling.get() < 0) {
             return Optional.empty();
         }
-
         int pageNum = rightSibling.get();
-        return Optional.of(LeafNode.fromBytes(transaction, metadata, pageNum));
+        return Optional.of(fromBytes(transaction, metadata, pageNum));
     }
 
     /** Serializes this leaf to its page. */
@@ -354,7 +416,7 @@ class LeafNode extends BPlusNode {
             keys.add(DataBox.fromBytes(buf, metadata.getKeySchema()));
             rids.add(RecordId.fromBytes(buf));
         }
-        return new LeafNode(metadata, pageNum, keys, rids, Optional.ofNullable(rightid), transaction);
+        return new LeafNode(metadata, pageNum, keys, rids, Optional.of(rightid), transaction);
     }
 
     // Builtins //////////////////////////////////////////////////////////////////
